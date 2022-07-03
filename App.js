@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { Alert, Button, StyleSheet, Text, View } from "react-native";
+import { Alert, Button, Platform, StyleSheet, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 
@@ -37,6 +37,13 @@ export default function App() {
 
       const pushTokenData = await Notifications.getExpoPushTokenAsync();
       console.log(pushTokenData);
+
+      if (Platform.OS === "android") {
+        Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.DEFAULT,
+        });
+      }
     }
     configurePushNotifications();
   }, []);
