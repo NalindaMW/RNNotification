@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { Alert, Button, StyleSheet, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 
@@ -15,6 +15,32 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
+  useEffect(() => {
+    async function configurePushNotifications() {
+      const { status } = await Notifications.getPermissionsAsync();
+      var finalStatus = status;
+      console.log("status");
+      console.log(status);
+
+      if (finalStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "Push notification required your permission"
+        );
+        return;
+      }
+
+      const pushTokenData = await Notifications.getExpoPushTokenAsync();
+      console.log(pushTokenData);
+    }
+    configurePushNotifications();
+  }, []);
+
   useEffect(() => {
     const subscription1 = Notifications.addNotificationReceivedListener(
       (notification) => {
@@ -38,41 +64,17 @@ export default function App() {
     };
   }, []);
 
-  async function allowsNotificationsAsync() {
-    console.log("allowsNotificationsAsync");
-    const settings = await Notifications.getPermissionsAsync();
-    console.log("settings");
-    console.log(settings);
-
-    return (
-      settings.granted ||
-      settings.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL
-    );
-  }
-
   async function scheduleNotificationHandler() {
-    const hasPushNotificationPermissionGranted =
-      await allowsNotificationsAsync();
-
-    if (!hasPushNotificationPermissionGranted) {
-      return;
-    }
-
-    console.log("hasPushNotificationPermissionGranted: ");
-    console.log(hasPushNotificationPermissionGranted);
-
-    if (hasPushNotificationPermissionGranted) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "My first notification title",
-          body: "This is the notification body",
-          data: { name: "Nalinda W." },
-        },
-        trigger: {
-          seconds: 5,
-        },
-      });
-    }
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "My first notification title",
+        body: "This is the notification body",
+        data: { name: "Nalinda W." },
+      },
+      trigger: {
+        seconds: 5,
+      },
+    });
   }
 
   return (
